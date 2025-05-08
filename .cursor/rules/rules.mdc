@@ -1,0 +1,16 @@
+---
+description: 
+globs: *.tsx,*.java,*.css
+alwaysApply: false
+---
+Overall flow summary:
+graph TD
+A[User inputs purpose & budget] --> B[Frontend sends request to /suggest]
+B --> C[Backend loads in-memory csv data]
+C --> D[Match components under budget]
+D --> E[Check basic compatibility]
+E --> F[Return build + price + score]
+F --> G[Frontend shows result]
+
+
+

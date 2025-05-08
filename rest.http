@@ -1,0 +1,35 @@
+GET http://localhost:8080/api/components
+// Get all components
+###
+
+GET http://localhost:8080/api/components/cpu
+// Get all CPU components
+###
+
+GET http://localhost:8080/api/components/gpu
+// Get all GPU components
+###
+
+GET http://localhost:8080/api/components/motherboard
+// Get all motherboard components
+###
+
+GET http://localhost:8080/api/components/ram
+// Get all ram components
+###
+
+GET http://localhost:8080/api/components/storage
+// Get all storage components
+###
+
+GET http://localhost:8080/api/components/psu
+// Get all power-supply components
+###
+
+GET http://localhost:8080/api/components/case
+// Get all cases
+###
+
+GET http://localhost:8080/api/components/build/suggest?purpose=Gaming&budget=1500
+// Get a suggested build for a specific purpose and budget
+###

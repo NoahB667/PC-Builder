@@ -1,0 +1,14 @@
+@startuml
+
+actor browser
+node gateway
+node frontend
+node backend
+database postgres
+
+browser -> gateway : HTTP Request
+gateway --> frontend: UI resources\n/index.html :3000
+gateway --> backend: API Request\n/api/get..:8080
+backend --> postgres: SQL Query
+
+@enduml

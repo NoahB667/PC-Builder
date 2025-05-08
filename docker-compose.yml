@@ -1,0 +1,42 @@
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: pc_builder_postgres
+    environment:
+      POSTGRES_USER: pcuser
+      POSTGRES_PASSWORD: pcpass
+      POSTGRES_DB: pcdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pc_builder_backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/pcdb
+      SPRING_DATASOURCE_USERNAME: pcuser
+      SPRING_DATASOURCE_PASSWORD: pcpass
+    depends_on:
+      - postgres
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: pc_builder_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend    
+    environment:
+      - REACT_APP_API_URL=http://backend:8080
+
+volumes:
+  pgdata:
