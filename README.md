@@ -20,6 +20,12 @@ Before setting up the project, ensure you have the following installed:
 - **Java 17**: [Install Java 17](https://adoptium.net/) (if running the backend locally).
 
 ---
+## Screenshots
+![image](https://github.com/user-attachments/assets/68515156-46cb-4888-af89-1a1f6a021338)
+![image](https://github.com/user-attachments/assets/5f578bf5-a2e3-4d60-bd64-8cb55394220b)
+![image](https://github.com/user-attachments/assets/ce39fa83-604c-408d-8492-d8da9dbde0bd)
+
+---
 
 ## Setup Instructions
 
