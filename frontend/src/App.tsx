@@ -1,10 +1,12 @@
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useState } from "react";
 import "./App.css";
 import { BuildForm } from "./components/BuildForm";
 import { BuildResult } from "./components/BuildResult";
 import ComponentDescription from "./components/ComponentDescription";
 import AvailableComponents from "./components/AvailableComponents";
+import LandingPage from "./components/LandingPage";
+import Navbar from "./components/Navbar";
 
 export const apiUrl =
   import.meta.env.REACT_APP_API_URL ||
@@ -54,9 +56,10 @@ const COMPONENT_ORDER = [
 ];
 
 function App() {
-  // State for build purpose, budget, loading, result, and error
   const [purpose, setPurpose] = useState<string>("Gaming");
   const [budget, setBudget] = useState<number>(1000);
+  const [priorities, setPriorities] = useState<string>(""); // Add priorities state
+  const [preferredBrands, setPreferredBrands] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [buildResult, setBuildResult] = useState<FormattedBuildResult | null>(
     null
@@ -130,10 +133,11 @@ function App() {
     setError(null);
 
     try {
-      // Prepare query params
       const params = new URLSearchParams({
         purpose: purpose,
         budget: budget.toString(),
+        priorities: priorities, // Add priorities to request
+        preferredBrands: preferredBrands.join(","),
       });
 
       // Fetch build suggestion from backend
@@ -168,59 +172,61 @@ function App() {
 
   return (
     <Router>
-      <div className="container">
-        <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
-          <div className="container">
-            <Link className="navbar-brand" to="/">
-              PC Build Advisor
-            </Link>
-            <div className="collapse navbar-collapse" id="navbarNav">
-              <ul className="navbar-nav ms-auto">
-                <li className="nav-item">
-                  <Link className="nav-link" to="/description">
-                    Component Descriptions
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link className="nav-link" to="/available-components">
-                    Available Components
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </nav>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route
+          path="/builder"
+          element={
+            <div className="app-container">
+              <Navbar variant="default" />
 
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <div className="container mt-4 row col-md-8">
+              <div className="main-content">
                 <h1>PC Build Advisor</h1>
                 <BuildForm
                   purpose={purpose}
                   budget={budget}
+                  priorities={priorities} // Add priorities prop
+                  preferredBrands={preferredBrands}
                   loading={loading}
                   onPurposeChange={setPurpose}
                   onBudgetChange={setBudget}
+                  onPrioritiesChange={setPriorities} // Add priorities handler
+                  onPreferredBrandsChange={setPreferredBrands}
                   onSubmit={handleSubmit}
                 />
                 {error && (
                   <div className="alert alert-danger mt-3">{error}</div>
                 )}
-                <div className="container mt-4 row col-md-8">
+                <div className="result-container">
                   {buildResult && <BuildResult {...buildResult} />}
                 </div>
               </div>
-            }
-          />
-          <Route path="/description" element={<ComponentDescription />} />
-          <Route
-            path="/available-components"
-            element={<AvailableComponents />}
-          />
-        </Routes>
-      </div>
+            </div>
+          }
+        />
+        <Route
+          path="/description"
+          element={
+            <div className="app-container">
+              <Navbar variant="default" />
+              <div className="main-content">
+                <ComponentDescription />
+              </div>
+            </div>
+          }
+        />
+        <Route
+          path="/available-components"
+          element={
+            <div className="app-container">
+              <Navbar variant="default" />
+              <div className="main-content">
+                <AvailableComponents />
+              </div>
+            </div>
+          }
+        />
+      </Routes>
     </Router>
   );
 }
