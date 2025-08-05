@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from 'react';
+import RangeSlider from 'react-bootstrap-range-slider';
 
 // Props interface for the BuildForm component
 interface BuildFormProps {
@@ -84,6 +85,8 @@ export const BuildForm: React.FC<BuildFormProps> = ({
     }
   };
 
+  const [ value, setValue ] = useState(0); 
+
   return (
     <form onSubmit={onSubmit} className="build-form">
       <div className="form-group">
@@ -132,10 +135,20 @@ export const BuildForm: React.FC<BuildFormProps> = ({
           id="budget"
           value={budget || ""}
           onChange={handleBudgetChange}
-          min="0"
+          min="500"
+          max="10000"
           disabled={loading}
           className="form-input"
           placeholder="Enter your budget"
+        />
+        <RangeSlider
+          min={500}
+          max={10000}
+          step={5}
+          value={budget}
+          onChange={e => onBudgetChange(Number(e.target.value))}
+          disabled={loading}
+          tooltip="auto"
         />
       </div>
 
