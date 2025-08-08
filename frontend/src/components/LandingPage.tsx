@@ -84,7 +84,7 @@ const LandingPage: React.FC = () => {
               className="slide-wrapper-aligned"
               style={{ transform: `translateX(-${currentSlide * 100}%)` }}
             >
-              {pcBuilds.map((build, index) => (
+              {pcBuilds.map((build) => (
                 <div key={build.id} className="slide-aligned">
                   <div className="slide-background-aligned">
                     <img src={build.image} alt={build.title} />
@@ -108,13 +108,13 @@ const LandingPage: React.FC = () => {
 
             {/* Slide Indicators */}
             <div className="slide-indicators-aligned">
-              {pcBuilds.map((_, index) => (
+              {pcBuilds.map((_, slideIndex) => (
                 <button
-                  key={index}
+                  key={slideIndex}
                   className={`indicator-aligned ${
-                    index === currentSlide ? "active" : ""
+                    slideIndex === currentSlide ? "active" : ""
                   }`}
-                  onClick={() => goToSlide(index)}
+                  onClick={() => goToSlide(slideIndex)}
                 />
               ))}
             </div>

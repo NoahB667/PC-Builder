@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import RangeSlider from 'react-bootstrap-range-slider';
 
 // Props interface for the BuildForm component
@@ -84,8 +84,6 @@ export const BuildForm: React.FC<BuildFormProps> = ({
       onPreferredBrandsChange([...AVAILABLE_BRANDS]);
     }
   };
-
-  const [ value, setValue ] = useState(0); 
 
   return (
     <form onSubmit={onSubmit} className="build-form">
