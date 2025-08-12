@@ -2,7 +2,6 @@ package com.pcbuilder.service;
 
 import com.pcbuilder.dto.BuildDTO;
 import com.pcbuilder.entity.Build;
-import com.pcbuilder.entity.BuildComponent;
 import com.pcbuilder.repository.BuildRepository;
 import com.pcbuilder.repository.BuildComponentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +70,14 @@ public class BuildService {
         return buildRepository.findByBudgetRange(minBudget, maxBudget).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
+    }
+
+    public List<BuildDTO> findBuildsByName(String name) {
+        return searchBuildsByName(name);
+    }
+
+    public List<BuildDTO> findBuildsByBudgetRange(Double minBudget, Double maxBudget) {
+        return getBuildsByBudgetRange(minBudget, maxBudget);
     }
 
     private BuildDTO convertToDTO(Build build) {

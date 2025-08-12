@@ -6,10 +6,10 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
-@EntityScan("com.pcbuilder.model") // Scan for JPA entities
-@EnableJpaRepositories("com.pcbuilder.repository") // Scan for JPA repositories
+@EntityScan({"com.pcbuilder.entity", "com.pcbuilder.user"}) // Scan for JPA entities
+@EnableJpaRepositories({"com.pcbuilder.repository", "com.pcbuilder.user"}) // Scan for JPA repositories
 public class PcbuilderApplication {
     public static void main(String[] args) {
         SpringApplication.run(PcbuilderApplication.class, args); // Start the Spring Boot application
     }
-} 
+}
