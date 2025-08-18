@@ -16,7 +16,7 @@ import java.util.function.Function;
 
 @Service
 public class JwtService {
-    private static final String SECRET_KEY = "secretkey"; // TODO: Use a strong key in production
+    private static final String SECRET_KEY = "bXktdmVyeS1zZWNyZXQta2V5LWFuZC1zaG91bGQtYmUtYmFzZTY0"; // TODO: Use a strong key in production
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
