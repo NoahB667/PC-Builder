@@ -10,6 +10,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EnableJpaRepositories({"com.pcbuilder.repository", "com.pcbuilder.user"}) // Scan for JPA repositories
 public class PcbuilderApplication {
     public static void main(String[] args) {
-        SpringApplication.run(PcbuilderApplication.class, args); // Start the Spring Boot application
+        SpringApplication.run(PcbuilderApplication.class, args);
     }
 }

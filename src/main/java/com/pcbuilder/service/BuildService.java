@@ -72,14 +72,6 @@ public class BuildService {
                 .collect(Collectors.toList());
     }
 
-    public List<BuildDTO> findBuildsByName(String name) {
-        return searchBuildsByName(name);
-    }
-
-    public List<BuildDTO> findBuildsByBudgetRange(Double minBudget, Double maxBudget) {
-        return getBuildsByBudgetRange(minBudget, maxBudget);
-    }
-
     private BuildDTO convertToDTO(Build build) {
         return new BuildDTO(
                 build.getId(),
