@@ -12,7 +12,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 #Stage 2: Create the runtime image
-FROM openjdk:17-jdk-slim as runtime
+FROM eclipse-temurin:17-jdk as runtime
 
 #Set the working directory in the runtime container
 WORKDIR /app
