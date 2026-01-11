@@ -15,19 +15,18 @@ public class Storage {
     private String name;
 
     @Column(name = "type", nullable = false)
-    private String type; // e.g., SSD, HDD
+    private String type;
 
     @Column(name = "capacity_gb", nullable = false)
-    private int capacityGb; // Storage capacity in GB
+    private int capacityGb;
 
     @Column(name = "speed_mbps", nullable = false)
-    private int speedMbps; // Speed in MB/s
+    private int speedMbps;
 
     @Column(name = "price", nullable = false)
-    private double price; // Price of the storage device
+    private double price;
 
     @Column(name = "brand", nullable = false)
-    private String brand; // Brand of the storage device
-
+    private String brand;
 
 }

@@ -15,15 +15,15 @@ public class Gpu {
     private String name;
 
     @Column(name = "vram", nullable = false)
-    private Integer vram; // in GB
+    private Integer vram;
 
     @Column(name = "tdp", nullable = false)
     private Integer tdp; // Thermal Design Power in watts
 
     @Column(name = "price", nullable = false)
-    private Double price; // in USD
+    private Double price;
 
     @Column(name = "brand", nullable = false)
-    private String brand; // e.g., NVIDIA, AMD
+    private String brand;
 
 }
