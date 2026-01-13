@@ -38,4 +38,7 @@ public class Cpu {
     @Column(name = "brand", nullable = false)
     private String brand;
 
+    @Column(name = "graphics")
+    private String graphics;
+
 }

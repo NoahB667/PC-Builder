@@ -11,21 +11,33 @@ public class Psu {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column(name = "brand", nullable = false)
+    private String brand;
 
-    @Column(name = "wattage", nullable = false)
-    private Integer wattage;
-
-    @Column(name = "modular", nullable = false)
-    private String modular;
-
-    @Column(name = "certification", nullable = false)
-    private String certification;
+    @Column(name = "model_name", nullable = false)
+    private String modelName;
 
     @Column(name = "price", nullable = false)
     private Double price;
 
-    @Column(name = "brand", nullable = false)
-    private String brand;
+    @Column(name = "wattage", nullable = false)
+    private Integer wattage;
+
+    @Column(name = "efficiency_rating", nullable = false)
+    private String efficiencyRating;
+
+    @Column(name = "modularity", nullable = false)
+    private String modularity;
+
+    @Column(name = "form_factor", nullable = false)
+    private String formFactor;
+
+    @Column(name = "atx_version")
+    private String atxVersion;
+
+    @Column(name = "has_12v2x6")
+    private Boolean has12v2x6;
+
+    @Column(name = "pcie_5_1_ready")
+    private Boolean pcie51Ready;
 }

@@ -11,25 +11,36 @@ public class Ram {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "brand", nullable = false)
+    private String brand;
+
+    @Column(name = "model_name", nullable = false)
     private String name;
 
-    @Column(name = "size_gb", nullable = false)
-    private int sizeGb;
-
-    @Column(name = "sticks", nullable = false)
-    private int sticks;
+    @Column(name = "generation", nullable = false)
+    private String generation;
 
     @Column(name = "speed_mhz", nullable = false)
     private int speedMhz;
 
-    @Column(name = "type", nullable = false)
-    private String type;
+    @Column(name = "cas_latency", nullable = false)
+    private int casLatency;
+
+    @Column(name = "total_capacity_gb", nullable = false)
+    private int totalCapacityGb;
+
+    @Column(name = "num_modules", nullable = false)
+    private int numModules;
+
+    @Column(name = "is_expo", nullable = false)
+    private boolean isExpo;
+
+    @Column(name = "is_xmp", nullable = false)
+    private boolean isXmp;
+
+    @Column(name = "height_mm", nullable = false)
+    private String heightMm;
 
     @Column(name = "price", nullable = false)
     private double price;
-
-    @Column(name = "brand", nullable = false)
-    private String brand;
-
 }

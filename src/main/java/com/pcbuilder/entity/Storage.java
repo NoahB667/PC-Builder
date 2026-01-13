@@ -11,22 +11,39 @@ public class Storage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column(name = "brand", nullable = false)
+    private String brand;
 
-    @Column(name = "type", nullable = false)
-    private String type;
-
-    @Column(name = "capacity_gb", nullable = false)
-    private int capacityGb;
-
-    @Column(name = "speed_mbps", nullable = false)
-    private int speedMbps;
+    @Column(name = "model_name", nullable = false)
+    private String modelName;
 
     @Column(name = "price", nullable = false)
     private double price;
 
-    @Column(name = "brand", nullable = false)
-    private String brand;
+    @Column(name = "capacity_gb", nullable = false)
+    private int capacityGb;
 
+    @Column(name = "interface_type", nullable = false)
+    private String interfaceType;
+
+    @Column(name = "form_factor", nullable = false)
+    private String formFactor;
+
+    @Column(name = "max_read_speed_mbs", nullable = false)
+    private int maxReadSpeedMbs;
+
+    @Column(name = "max_write_speed_mbs", nullable = false)
+    private int maxWriteSpeedMbs;
+
+    @Column(name = "tbw_rating", nullable = false)
+    private int tbwRating;
+
+    @Column(name = "has_dram", nullable = false)
+    private boolean hasDram;
+
+    @Column(name = "nand_type", nullable = false)
+    private String nandType;
+
+    @Column(name = "includes_heatsink", nullable = false)
+    private boolean includesHeatSink;
 }
