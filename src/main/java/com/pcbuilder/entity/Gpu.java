@@ -27,7 +27,7 @@ public class Gpu {
     private Integer vramGb;
 
     @Column(name = "vram_type", nullable = false)
-    private Integer vramType;
+    private String vramType;
 
     @Column(name = "boost_clock_mhz", nullable = false)
     private Integer boostClockMhz;
