@@ -81,10 +81,9 @@ public class ComponentController {
     @GetMapping("/build/suggest")
     public ResponseEntity<Map<String, Object>> suggestBuild(
             @RequestParam String purpose,
-            @RequestParam Double budget,
-            @RequestParam(required = false) String preferredBrand) {
+            @RequestParam Double budget) {
 
-        Map<String, Object> suggestion = buildSuggestionService.suggestBuild(purpose, budget, preferredBrand);
+        Map<String, Object> suggestion = buildSuggestionService.suggestBuild(purpose, budget);
         return ResponseEntity.ok(suggestion);
     }
 }

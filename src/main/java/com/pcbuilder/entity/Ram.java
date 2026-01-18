@@ -43,4 +43,23 @@ public class Ram {
 
     @Column(name = "price", nullable = false)
     private double price;
+
+    public double getBenchmarkScore() {
+        // Normalize Speed (4800 to 8000 MHz range)
+        double speedScore = (this.speedMhz - 4800.0) / (8000.0 - 4800.0) * 100;
+
+        // Normalize Latency (CL40 is "low", CL28 is "high" performance)
+        // Formula inverted because lower CAS is better
+        double latencyScore = (40.0 - this.casLatency) / (40.0 - 28.0) * 100;
+
+        // Normalize Capacity (8GB to 128GB range)
+        double capacityScore = (this.totalCapacityGb - 8.0) / (128.0 - 8.0) * 100;
+
+        // Ensure no values go below 0 or above 100
+        speedScore = Math.max(0, Math.min(100, speedScore));
+        latencyScore = Math.max(0, Math.min(100, latencyScore));
+        capacityScore = Math.max(0, Math.min(100, capacityScore));
+
+        return (speedScore * 0.5) + (latencyScore * 0.3) + (capacityScore * 0.2);
+    }
 }

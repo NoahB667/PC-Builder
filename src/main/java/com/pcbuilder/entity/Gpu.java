@@ -46,4 +46,9 @@ public class Gpu {
 
     @Column(name = "pcie_gen", nullable = false)
     private Integer pcieGen;
+
+    public double getBenchmarkScore() {
+        // Normalize score to a 0 to 100 scale (300 min to 37200 max)
+        return (performanceScore - 300.0) / 369.0;
+    }
 }

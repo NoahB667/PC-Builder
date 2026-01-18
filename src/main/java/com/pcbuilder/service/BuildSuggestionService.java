@@ -2,7 +2,7 @@ package com.pcbuilder.service;
 
 import com.pcbuilder.entity.*;
 import com.pcbuilder.repository.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.Getter;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -12,33 +12,36 @@ import java.util.stream.Collectors;
 @Service
 public class BuildSuggestionService {
 
-    @Autowired
-    private CpuRepository cpuRepository;
+    private final CpuRepository cpuRepository;
 
-    @Autowired
-    private GpuRepository gpuRepository;
+    private final GpuRepository gpuRepository;
 
-    @Autowired
-    private MotherboardRepository motherboardRepository;
+    private final MotherboardRepository motherboardRepository;
 
-    @Autowired
-    private RamRepository ramRepository;
+    private final RamRepository ramRepository;
 
-    @Autowired
-    private StorageRepository storageRepository;
+    private final StorageRepository storageRepository;
 
-    @Autowired
-    private PsuRepository psuRepository;
+    private final PsuRepository psuRepository;
 
-    @Autowired
-    private CaseRepository caseRepository;
+    private final CaseRepository caseRepository;
 
-    private static final int BEAM_WIDTH = 5;
+    private static final int BEAM_WIDTH = 50;
 
-    public Map<String, Object> suggestBuild(String purpose, Double budget, String preferredBrand) {
+    public BuildSuggestionService(CpuRepository cpuRepository, GpuRepository gpuRepository, MotherboardRepository motherboardRepository, RamRepository ramRepository, StorageRepository storageRepository, PsuRepository psuRepository, CaseRepository caseRepository) {
+        this.cpuRepository = cpuRepository;
+        this.gpuRepository = gpuRepository;
+        this.motherboardRepository = motherboardRepository;
+        this.ramRepository = ramRepository;
+        this.storageRepository = storageRepository;
+        this.psuRepository = psuRepository;
+        this.caseRepository = caseRepository;
+    }
+
+    public Map<String, Object> suggestBuild(String purpose, Double budget) {
         // Fetch Components (Data Access Layer)
-        List<Cpu> cpus = filterCpus(cpuRepository.findAll(), preferredBrand);
-        List<Gpu> gpus = filterGpus(gpuRepository.findAll(), preferredBrand);
+        List<Cpu> cpus = cpuRepository.findAll();
+        List<Gpu> gpus = gpuRepository.findAll();
         List<Motherboard> motherboards = motherboardRepository.findAll();
         List<Ram> rams = ramRepository.findAll();
         List<Storage> storages = storageRepository.findAll();
@@ -46,119 +49,109 @@ public class BuildSuggestionService {
         List<Case> cases = caseRepository.findAll();
 
         BuildCandidate bestCandidate = executeBeamSearch(purpose, budget, cpus, motherboards, rams, gpus, storages, psus, cases);
-        return constructResponse(bestCandidate, purpose, budget, preferredBrand);
+        return constructResponse(bestCandidate, purpose, budget);
     }
 
     private BuildCandidate executeBeamSearch(String purpose, Double budget,
-                             List<Cpu> cpus, List<Motherboard> mbs,
-                             List<Ram> rams, List<Gpu> gpus,
-                             List<Storage> storages, List<Psu> psus,
-                             List<Case> cases) {
+                                             List<Cpu> cpus, List<Motherboard> motherboards,
+                                             List<Ram> rams, List<Gpu> gpus,
+                                             List<Storage> storages, List<Psu> psus,
+                                             List<Case> cases) {
 
         List<BuildCandidate> candidates = new ArrayList<>();
         candidates.add(new BuildCandidate());
+
         if ("Gaming".equalsIgnoreCase(purpose)) {
-            // Gaming: Prioritize GPU first
-            candidates = expandCandidates(candidates, gpus, budget, purpose, (cand, gpu) -> {
-                cand.gpu = gpu;
-                cand.totalCost += gpu.getPrice();
-                return cand;
-            });
-
-            candidates = expandCandidates(candidates, cpus, budget, purpose, (cand, cpu) -> {
-                cand.cpu = cpu;
-                cand.totalCost += cpu.getPrice();
-                return cand;
-            });
-
-            candidates = expandCandidates(candidates, mbs, budget, purpose, (cand, mb) -> {
-                if (cand.cpu != null && mb.getSocket().equals(cand.cpu.getSocket())) {
-                    cand.motherboard = mb;
-                    cand.totalCost += mb.getPrice();
-                    return cand;
-                }
-                return null;
-            });
-
-            candidates = expandCandidates(candidates, rams, budget, purpose, (cand, ram) -> {
-                cand.ram = ram;
-                cand.totalCost += ram.getPrice();
-                return cand;
-            });
-
-            candidates = expandCandidates(candidates, storages, budget, purpose, (cand, storage) -> {
-                cand.storage = storage;
-                cand.totalCost += storage.getPrice();
-                return cand;
-            });
-
-            candidates = expandCandidates(candidates, psus, budget, purpose, (cand, psu) -> {
-                int requiredWattage = calculateRequiredWattage(cand);
-                if (psu.getWattage() >= requiredWattage) {
-                    cand.psu = psu;
-                    cand.totalCost += psu.getPrice();
-                    return cand;
-                }
-                return null;
-            });
-
-            candidates = expandCandidates(candidates, cases, budget, purpose, (cand, pcCase) -> {
-                cand.pcCase = pcCase;
-                cand.totalCost += pcCase.getPrice();
-                return cand;
-            });
-
+            candidates = expandWithCpus(candidates, cpus, budget, purpose);
+            System.out.println("Step CPU: " + candidates.size() + " candidates");
         } else {
-            candidates = expandCandidates(candidates, cpus, budget, purpose, (cand, cpu) -> {
-                cand.cpu = cpu;
-                cand.totalCost += cpu.getPrice();
-                return cand;
-            });
-
-            candidates = expandCandidates(candidates, mbs, budget, purpose, (cand, mb) -> {
-                if (cand.cpu != null && mb.getSocket().equals(cand.cpu.getSocket())) {
-                    cand.motherboard = mb;
-                    cand.totalCost += mb.getPrice();
-                    return cand;
-                }
-                return null;
-            });
-
-            candidates = expandCandidates(candidates, rams, budget, purpose, (cand, ram) -> {
-                cand.ram = ram;
-                cand.totalCost += ram.getPrice();
-                return cand;
-            });
-
-            candidates = expandCandidates(candidates, gpus, budget, purpose, (cand, gpu) -> {
-                cand.gpu = gpu;
-                cand.totalCost += gpu.getPrice();
-                return cand;
-            });
-
-            candidates = expandCandidates(candidates, storages, budget, purpose, (cand, storage) -> {
-                cand.storage = storage;
-                cand.totalCost += storage.getPrice();
-                return cand;
-            });
-
-            candidates = expandCandidates(candidates, psus, budget, purpose, (cand, psu) -> {
-                int requiredWattage = calculateRequiredWattage(cand);
-                if (psu.getWattage() >= requiredWattage) {
-                    cand.psu = psu;
-                    cand.totalCost += psu.getPrice();
-                    return cand;
-                }
-                return null;
-            });
-
-            candidates = expandCandidates(candidates, cases, budget, purpose, (cand, pcCase) -> {
-                cand.pcCase = pcCase;
-                cand.totalCost += pcCase.getPrice();
-                return cand;
-            });
+            // Only add cpus with integrated graphics
+            cpus = cpus.stream()
+                    .filter(cpu -> cpu.getGraphics() != null && !cpu.getGraphics().isBlank())
+                    .collect(Collectors.toList());
+            candidates = expandWithCpus(candidates, cpus, budget, purpose);
         }
+
+        candidates = expandWithMotherboards(candidates, motherboards, budget, purpose);
+        System.out.println("Step Motherboard: " + candidates.size() + " candidates");
+        if ("Gaming".equalsIgnoreCase(purpose)) {
+            candidates = expandWithGpus(candidates, gpus, budget, purpose);
+            System.out.println("Step GPU: " + candidates.size() + " candidates");
+        }
+
+        candidates = expandWithRams(candidates, rams, budget, purpose);
+        System.out.println("Step RAM: " + candidates.size() + " candidates");
+        candidates = expandWithStorages(candidates, storages, budget, purpose);
+        System.out.println("Step STORAGE: " + candidates.size() + " candidates");
+        candidates = expandWithPsus(candidates, psus, budget, purpose);
+        System.out.println("Step PSU: " + candidates.size() + " candidates");
+        candidates = expandWithCases(candidates, cases, budget, purpose);
+        System.out.println("Step CASES: " + candidates.size() + " candidates");
         return candidates.isEmpty() ? null : candidates.get(0);
+    }
+
+    // Helper methods for expanding candidates with specific components
+    private List<BuildCandidate> expandWithCpus(List<BuildCandidate> candidates, List<Cpu> components, Double budget, String purpose) {
+        return expandCandidates(candidates, components, budget, purpose, (cand, comp) -> {
+            cand.cpu = comp;
+            cand.totalCost += comp.getPrice();
+            return cand;
+        });
+    }
+
+    private List<BuildCandidate> expandWithGpus(List<BuildCandidate> candidates, List<Gpu> components, Double budget, String purpose) {
+        return expandCandidates(candidates, components, budget, purpose, (cand, comp) -> {
+            cand.gpu = comp;
+            cand.totalCost += comp.getPrice();
+            return cand;
+        });
+    }
+
+    private List<BuildCandidate> expandWithMotherboards(List<BuildCandidate> candidates, List<Motherboard> components, Double budget, String purpose) {
+        return expandCandidates(candidates, components, budget, purpose, (cand, comp) -> {
+            if (cand.cpu != null && comp.getSocket().equals(cand.cpu.getSocket())) {
+                cand.motherboard = comp;
+                cand.totalCost += comp.getPrice();
+                return cand;
+            }
+            return null;
+        });
+    }
+
+    private List<BuildCandidate> expandWithRams(List<BuildCandidate> candidates, List<Ram> components, Double budget, String purpose) {
+        return expandCandidates(candidates, components, budget, purpose, (cand, comp) -> {
+            cand.ram = comp;
+            cand.totalCost += comp.getPrice();
+            return cand;
+        });
+    }
+
+    private List<BuildCandidate> expandWithStorages(List<BuildCandidate> candidates, List<Storage> components, Double budget, String purpose) {
+        return expandCandidates(candidates, components, budget, purpose, (cand, comp) -> {
+            cand.storage = comp;
+            cand.totalCost += comp.getPrice();
+            return cand;
+        });
+    }
+
+    private List<BuildCandidate> expandWithPsus(List<BuildCandidate> candidates, List<Psu> components, Double budget, String purpose) {
+        return expandCandidates(candidates, components, budget, purpose, (cand, comp) -> {
+            int requiredWattage = calculateRequiredWattage(cand);
+            if (comp.getWattage() >= requiredWattage) {
+                cand.psu = comp;
+                cand.totalCost += comp.getPrice();
+                return cand;
+            }
+            return null;
+        });
+    }
+
+    private List<BuildCandidate> expandWithCases(List<BuildCandidate> candidates, List<Case> components, Double budget, String purpose) {
+        return expandCandidates(candidates, components, budget, purpose, (cand, comp) -> {
+            cand.pcCase = comp;
+            cand.totalCost += comp.getPrice();
+            return cand;
+        });
     }
 
     private <T> List<BuildCandidate> expandCandidates(List<BuildCandidate> currentCandidates,
@@ -177,9 +170,12 @@ public class BuildSuggestionService {
                     // Apply transition (add component)
                     BuildCandidate result = transition.apply(newCand, component);
 
-                    if (result != null && result.totalCost <= budget) {
-                        result.score = calculateScore(result, purpose);
-                        nextGeneration.add(result);
+                    if (result != null) {
+                        double futureBuffer = calculateFutureBuffer(result);
+                        if (result.totalCost + futureBuffer <= budget) {
+                            result.score = calculateScore(result, purpose);
+                            nextGeneration.add(result);
+                        }
                     }
                 } catch (CloneNotSupportedException e) {
                     System.err.println("Clone failed: " + e.getMessage());
@@ -195,54 +191,61 @@ public class BuildSuggestionService {
     }
 
     private double calculateScore(BuildCandidate build, String purpose) {
-        double score = 0;
-        double cpuWeight = purpose.equalsIgnoreCase("Workstation") ? 1.5 : 1.0;
-        double gpuWeight = purpose.equalsIgnoreCase("Gaming") ? 1.5 : 1.0;
-        double ramWeight = purpose.equalsIgnoreCase("Workstation") ? 1.2 : 0.8;
+        boolean isGaming = purpose.equalsIgnoreCase("Gaming");
+
+        // 1. Initial Path-Specific Weights
+        double cpuWeight = isGaming ? 0.35 : 0.70;
+        double gpuWeight = isGaming ? 0.55 : 0.00;
+        double ramWeight = isGaming ? 0.05 : 0.20;
+        double storageWeight = 0.05;
+        double totalScore = 0;
 
         if (build.cpu != null) {
-            score += (build.cpu.getCores() * build.cpu.getThreads() * build.cpu.getBoostClock()) * cpuWeight;
+            totalScore += build.cpu.getBenchmarkScore() * cpuWeight;
         }
-        if (build.gpu != null) {
-            score += (build.gpu.getVram() * 100) * gpuWeight;
+
+        if (isGaming && build.gpu != null) {
+            totalScore += build.gpu.getBenchmarkScore() * gpuWeight;
         }
+
         if (build.ram != null) {
-            score += (build.ram.getSizeGb() * build.ram.getSpeedMhz() / 100.0) * ramWeight;
+            double rScore = build.ram.getBenchmarkScore();
+            if (build.ram.getNumModules() < 2) rScore *= 0.8;
+            totalScore += rScore * ramWeight;
         }
+
         if (build.storage != null) {
-            score += build.storage.getCapacityGb() * (build.storage.getType().contains("SSD") ? 2 : 0.5);
+            totalScore += build.storage.getBenchmarkScore() * storageWeight;
         }
-        return score;
-    }
 
-    private int calculateRequiredWattage(BuildCandidate b) {
-        int w = 300; // base system wattage
-        if (b.cpu != null) w += b.cpu.getTdp();
-        if (b.gpu != null) w += b.gpu.getTdp();
-        return (int) (w * 1.2); // 20% overhead
-    }
-
-    private List<Cpu> filterCpus(List<Cpu> cpus, String brand) {
-        if ("AMD".equalsIgnoreCase(brand)) {
-             return cpus.stream().filter(c -> c.getBrand().equalsIgnoreCase("AMD")).collect(Collectors.toList());
+        // Bottleneck Penalty (Gaming Only)
+        if (isGaming && build.cpu != null && build.gpu != null) {
+            double diff = Math.abs(build.cpu.getBenchmarkScore() - build.gpu.getBenchmarkScore());
+            if (diff > 40) totalScore *= 0.85;
         }
-        return cpus;
+
+        return totalScore;
     }
 
-    private List<Gpu> filterGpus(List<Gpu> gpus, String brand) {
-        if ("NVIDIA".equalsIgnoreCase(brand)) {
-            return gpus.stream().filter(g -> g.getBrand().equalsIgnoreCase("NVIDIA")).collect(Collectors.toList());
-        } else if ("AMD".equalsIgnoreCase(brand)) {
-            return gpus.stream().filter(g -> g.getBrand().equalsIgnoreCase("AMD")).collect(Collectors.toList());
-        }
-        return gpus;
+    private double calculateFutureBuffer(BuildCandidate build) {
+        double buffer = 0;
+        if (build.storage == null) buffer += 80;
+        if (build.psu == null) buffer += 100;
+        if (build.pcCase == null) buffer += 70;
+        if (build.ram == null) buffer += 100;
+        return buffer;
+    }
+    private int calculateRequiredWattage(BuildCandidate build) {
+        int wattage = 100;
+        if (build.cpu != null) wattage += build.cpu.getTdp();
+        if (build.gpu != null) wattage += build.gpu.getTdp();
+        return (int) (wattage * 1.15);
     }
 
-    private Map<String, Object> constructResponse(BuildCandidate build, String purpose, Double budget, String brand) {
+    private Map<String, Object> constructResponse(BuildCandidate build, String purpose, Double budget) {
         Map<String, Object> map = new HashMap<>();
         map.put("purpose", purpose);
         map.put("budget", budget);
-        map.put("preferredBrand", brand);
 
         if (build == null) {
             map.put("error", "No valid build found within budget");
@@ -274,6 +277,7 @@ public class BuildSuggestionService {
         Storage storage;
         Psu psu;
         Case pcCase;
+        @Getter
         double totalCost = 0;
         double score = 0;
 

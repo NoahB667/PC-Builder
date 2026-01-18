@@ -46,4 +46,25 @@ public class Storage {
 
     @Column(name = "includes_heatsink", nullable = false)
     private boolean includesHeatSink;
+
+    public double getBenchmarkScore() {
+        // Normalize Speed (Range: 500 MB/s for SATA to 15,000 MB/s for Gen5)
+        double avgSpeed = (this.maxReadSpeedMbs + this.maxWriteSpeedMbs) / 2.0;
+        double speedScore = (avgSpeed - 500.0) / (15000.0 - 500.0) * 100;
+
+        // Normalize Durability (TBW per GB), a good SSD usually has 0.6 TBW per 1GB of capacity.
+        double durabilityRatio = (double) this.tbwRating / this.capacityGb;
+        double durabilityScore = (durabilityRatio / 0.8) * 100;
+
+        // Tech & Stability (DRAM and NAND Type)
+        double techScore = 0;
+        if (this.hasDram) techScore += 50;
+        if (this.nandType.equalsIgnoreCase("TLC")) techScore += 50;
+        else if (this.nandType.equalsIgnoreCase("MLC")) techScore += 50;
+        else if (this.nandType.equalsIgnoreCase("QLC")) techScore += 20;
+
+        speedScore = Math.max(0, Math.min(100, speedScore));
+        durabilityScore = Math.max(0, Math.min(100, durabilityScore));
+        return (speedScore * 0.6) + (durabilityScore * 0.2) + (techScore * 0.2);
+    }
 }

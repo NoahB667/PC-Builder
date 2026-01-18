@@ -41,4 +41,11 @@ public class Cpu {
     @Column(name = "graphics")
     private String graphics;
 
+    public double getBenchmarkScore() {
+        double singleCoreScore = this.boostClock * 100;
+        double threadEfficiency = 0.85;
+        double multiCoreScore = (this.cores + (this.threads - this.cores) * threadEfficiency) * this.boostClock * 50;
+        return (singleCoreScore * 0.4) + (multiCoreScore * 0.6);
+    }
+
 }
