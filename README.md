@@ -2,6 +2,8 @@
 
 This project is a full-stack PC Builder application that allows users to configure and optimize PC builds based on budget and purpose. It consists of a **React frontend**, a **Spring Boot backend**, and a **PostgreSQL database**, all containerized using Docker.
 
+Currently working on refactoring the backend to improve the build suggestion logic, as well as redesigning the frontend for a better user experience.
+
 ---
 
 ## Features
@@ -18,12 +20,6 @@ Before setting up the project, ensure you have the following installed:
 - **Docker Compose**: Comes bundled with Docker Desktop.
 - **Node.js**: [Install Node.js](https://nodejs.org/) (if running the frontend locally).
 - **Java 17**: [Install Java 17](https://adoptium.net/) (if running the backend locally).
-
----
-## Screenshots
-![image](https://github.com/user-attachments/assets/68515156-46cb-4888-af89-1a1f6a021338)
-![image](https://github.com/user-attachments/assets/5f578bf5-a2e3-4d60-bd64-8cb55394220b)
-![image](https://github.com/user-attachments/assets/ce39fa83-604c-408d-8492-d8da9dbde0bd)
 
 ---
 
