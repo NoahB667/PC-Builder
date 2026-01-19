@@ -7,25 +7,128 @@ import Navbar from "./components/Navbar";
 export const apiUrl =
   import.meta.env.VITE_API_URL || "http://localhost:8080";
 
-// TypeScript interface for a single component
-interface Component {
+// Base interface for common component properties
+interface BaseComponent {
   id: number;
+  price: number;
+}
+
+// CPU specific interface
+interface CpuComponent extends BaseComponent {
   brand: string;
   name: string;
-  price: number;
-  performanceScore: number;
+  socket: string;
+  cores: number;
+  threads: number;
+  baseClock: number;
+  boostClock: number;
+  tdp: number;
+  graphics?: string;
 }
+
+// GPU specific interface - matches Gpu.java
+interface GpuComponent extends BaseComponent {
+  manufacturer: string;
+  modelName: string;
+  chipset_brand: string;
+  vramGb: number;
+  vramType: string;
+  boostClockMhz: number;
+  performanceScore: number;
+  tdp: number;
+  lengthMm: number;
+  slotWidth: number;
+  pcieGen: number;
+}
+
+// Motherboard specific interface - matches Motherboard.java
+interface MotherboardComponent extends BaseComponent {
+  brand: string;
+  modelName: string;
+  socket: string;
+  chipset: string;
+  formFactor: string;
+  ramGen: string;
+  ramSlots: number;
+  maxRamSpeedMts?: number;
+  pcieGenPrimary?: string;
+  m2SlotsCount?: number;
+  hasWifi?: boolean;
+  wifiVersion?: string;
+  supportsBackConnect?: boolean;
+}
+
+// RAM specific interface - matches Ram.java
+interface RamComponent extends BaseComponent {
+  brand: string;
+  name: string; // Note: backend uses 'name' not 'modelName'
+  generation: string;
+  speedMhz: number;
+  casLatency: number;
+  totalCapacityGb: number;
+  numModules: number;
+  isExpo: boolean;
+  isXmp: boolean;
+  heightMm: string;
+}
+
+// Storage specific interface - matches Storage.java
+interface StorageComponent extends BaseComponent {
+  brand: string;
+  modelName: string;
+  capacityGb: number;
+  interfaceType: string;
+  formFactor: string;
+  maxReadSpeedMbs: number;
+  maxWriteSpeedMbs: number;
+  tbwRating: number;
+  hasDram: boolean;
+  nandType: string;
+  includesHeatSink: boolean;
+}
+
+// PSU specific interface - matches Psu.java
+interface PsuComponent extends BaseComponent {
+  brand: string;
+  modelName: string;
+  wattage: number;
+  efficiencyRating: string;
+  modularity: string;
+  formFactor: string;
+  atxVersion?: string;
+  has12v2x6?: boolean;
+  pcie51Ready?: boolean;
+}
+
+// Case specific interface - matches Case.java
+interface CaseComponent extends BaseComponent {
+  brand: string;
+  modelName: string;
+  color?: string;
+  type?: string;
+  maxMotherboardSize?: string;
+  psuFormFactor?: string;
+  maxGpuLengthMm?: number;
+  maxCpuCoolerHeightMm?: number;
+  maxRadiatorSupportMm?: number;
+  hasTemperedGlass?: boolean;
+  supportsBackConnect?: boolean;
+  usbCFrontPanel?: boolean;
+}
+
+// Union type for all component types
+type Component = CpuComponent | GpuComponent | MotherboardComponent | RamComponent | StorageComponent | PsuComponent | CaseComponent;
 
 // Interface for the backend build suggestion response
 interface BuildSuggestion {
   components: {
-    cpu: Component | null;
-    motherboard: Component | null;
-    ram: Component | null;
-    gpu: Component | null;
-    storage: Component | null;
-    psu: Component | null;
-    case: Component | null;
+    cpu: CpuComponent | null;
+    motherboard: MotherboardComponent | null;
+    ram: RamComponent | null;
+    gpu: GpuComponent | null;
+    storage: StorageComponent | null;
+    psu: PsuComponent | null;
+    case: CaseComponent | null;
   };
   totalCost: number;
   score: number;
@@ -38,6 +141,7 @@ interface FormattedBuildResult {
     [key: string]: {
       name: string;
       price: number;
+      details: Component;
     };
   };
   totalPrice: number;
@@ -69,7 +173,7 @@ function App() {
     suggestion: BuildSuggestion
   ): FormattedBuildResult => {
     const formattedComponents: {
-      [key: string]: { name: string; price: number };
+      [key: string]: { name: string; price: number; details: Component };
     } = {};
 
     // Map backend component keys to display names
@@ -83,20 +187,57 @@ function App() {
       case: "Case",
     };
 
+    // Helper function to get the display name for a component
+    const getComponentDisplayName = (key: string, component: Component): string => {
+      switch (key) {
+        case "cpu": {
+          const cpu = component as CpuComponent;
+          return cpu.name.trim();
+        }
+        case "gpu": {
+          const gpu = component as GpuComponent;
+          return gpu.modelName.trim();
+        }
+        case "motherboard": {
+          const mobo = component as MotherboardComponent;
+          return `${mobo.brand} ${mobo.modelName}`.trim();
+        }
+        case "ram": {
+          const ram = component as RamComponent;
+          return ram.name.trim();
+        }
+        case "storage": {
+          const storage = component as StorageComponent;
+          return `${storage.brand} ${storage.modelName}`.trim();
+        }
+        case "psu": {
+          const psu = component as PsuComponent;
+          return `${psu.brand} ${psu.modelName}`.trim();
+        }
+        case "case": {
+          const caseComp = component as CaseComponent;
+          return `${caseComp.brand} ${caseComp.modelName}`.trim();
+        }
+        default:
+          return "Unknown Component";
+      }
+    };
+
     // Format all components from the object
     Object.entries(suggestion.components).forEach(([key, component]) => {
       if (component) {
         const displayName = componentMapping[key] || key;
         formattedComponents[displayName] = {
-          name: `${component.brand} ${component.name}`,
+          name: getComponentDisplayName(key, component),
           price: component.price,
+          details: component,
         };
       }
     });
 
     // Order components according to COMPONENT_ORDER
     const orderedComponents: {
-      [key: string]: { name: string; price: number };
+      [key: string]: { name: string; price: number; details: Component };
     } = {};
     COMPONENT_ORDER.forEach((type) => {
       if (formattedComponents[type]) {

@@ -341,20 +341,63 @@ button:disabled {
   gap: 8px;
 }
 
+.component-wrapper {
+  display: flex;
+  flex-direction: column;
+  background: var(--input-background);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
 .component-item {
   display: flex;
   padding: 16px;
-  background: var(--input-background);
-  border-radius: 12px;
   align-items: center;
   justify-content: space-between;
-  border: 1px solid var(--border-color);
   transition: all 0.2s ease;
+  position: relative;
 }
 
 .component-item:hover {
-  border-color: var(--primary-color);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  background: var(--card-background);
+}
+
+.expand-icon {
+  color: var(--secondary-color);
+  font-size: 12px;
+  margin-left: 8px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.component-details {
+  padding: 16px;
+  background: var(--card-background);
+  border-top: 1px solid var(--border-color);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.detail-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-label {
+  font-size: 12px;
+  color: var(--secondary-color);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.detail-value {
+  font-size: 14px;
+  color: var(--text-color);
+  font-weight: 500;
 }
 
 @media (max-width: 768px) {
