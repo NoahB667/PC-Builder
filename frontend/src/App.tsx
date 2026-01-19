@@ -1,34 +1,35 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useState } from "react";
 import "./App.css";
 import { BuildForm } from "./components/BuildForm";
 import { BuildResult } from "./components/BuildResult";
-import ComponentDescription from "./components/ComponentDescription";
-import AvailableComponents from "./components/AvailableComponents";
-import LandingPage from "./components/LandingPage";
 import Navbar from "./components/Navbar";
 
 export const apiUrl =
-  import.meta.env.REACT_APP_API_URL ||
-  `${window.location.protocol}//${window.location.hostname}:8080`;
+  import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 // TypeScript interface for a single component
 interface Component {
   id: number;
-  type: string;
   brand: string;
   name: string;
-  socket: string;
-  powerWatt: number;
   price: number;
   performanceScore: number;
 }
 
 // Interface for the backend build suggestion response
 interface BuildSuggestion {
-  components: Component[];
-  compatibilityPass: boolean;
-  totalPrice: number;
+  components: {
+    cpu: Component | null;
+    motherboard: Component | null;
+    ram: Component | null;
+    gpu: Component | null;
+    storage: Component | null;
+    psu: Component | null;
+    case: Component | null;
+  };
+  totalCost: number;
+  score: number;
+  error?: string;
 }
 
 // Interface for the formatted build result used in the frontend
@@ -58,30 +59,11 @@ const COMPONENT_ORDER = [
 function App() {
   const [purpose, setPurpose] = useState<string>("Gaming");
   const [budget, setBudget] = useState<number>(1000);
-  const [priorities, setPriorities] = useState<string>(""); // Add priorities state
-  const [preferredBrands, setPreferredBrands] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [buildResult, setBuildResult] = useState<FormattedBuildResult | null>(
     null
   );
   const [error, setError] = useState<string | null>(null);
-
-  // Helper to format component type for display
-  const formatComponentType = (type: string): string => {
-    switch (type.toLowerCase()) {
-      case "cpu":
-        return "CPU";
-      case "gpu":
-        return "GPU";
-      case "ram":
-        return "RAM";
-      case "power supply":
-      case "psu":
-        return "PSU";
-      default:
-        return type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
-    }
-  };
 
   // Format the backend build suggestion into a frontend-friendly structure
   const formatBuildResult = (
@@ -91,13 +73,26 @@ function App() {
       [key: string]: { name: string; price: number };
     } = {};
 
-    // Format all components by type
-    suggestion.components.forEach((component) => {
-      const formattedType = formatComponentType(component.type);
-      formattedComponents[formattedType] = {
-        name: `${component.brand} ${component.name}`,
-        price: component.price,
-      };
+    // Map backend component keys to display names
+    const componentMapping: { [key: string]: string } = {
+      cpu: "CPU",
+      gpu: "GPU",
+      motherboard: "Motherboard",
+      ram: "RAM",
+      storage: "Storage",
+      psu: "PSU",
+      case: "Case",
+    };
+
+    // Format all components from the object
+    Object.entries(suggestion.components).forEach(([key, component]) => {
+      if (component) {
+        const displayName = componentMapping[key] || key;
+        formattedComponents[displayName] = {
+          name: `${component.brand} ${component.name}`,
+          price: component.price,
+        };
+      }
     });
 
     // Order components according to COMPONENT_ORDER
@@ -110,19 +105,11 @@ function App() {
       }
     });
 
-    // Calculate average performance score
-    const averageScore = Math.round(
-      suggestion.components.reduce(
-        (acc, curr) => acc + curr.performanceScore,
-        0
-      ) / suggestion.components.length
-    );
-
     return {
       components: orderedComponents,
-      totalPrice: suggestion.totalPrice,
-      score: averageScore,
-      isCompatible: suggestion.compatibilityPass,
+      totalPrice: suggestion.totalCost,
+      score: suggestion.score,
+      isCompatible: true, // Backend doesn't return compatibility flag, assume true if build is returned
     };
   };
 
@@ -136,8 +123,6 @@ function App() {
       const params = new URLSearchParams({
         purpose: purpose,
         budget: budget.toString(),
-        priorities: priorities, // Add priorities to request
-        preferredBrands: preferredBrands.join(","),
       });
 
       // Fetch build suggestion from backend
@@ -153,12 +138,18 @@ function App() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
-        throw new Error(errorData?.message || "Failed to get build suggestion");
+        throw new Error(errorData?.error || errorData?.message || "Failed to get build suggestion");
       }
 
       const result: BuildSuggestion = await response.json();
 
-      if (!result.components || result.components.length === 0) {
+      // Check if backend returned an error
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      // Check if we got valid components
+      if (!result.components || Object.keys(result.components).length === 0) {
         throw new Error("No compatible components found for your requirements");
       }
 
@@ -171,63 +162,28 @@ function App() {
   };
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route
-          path="/builder"
-          element={
-            <div className="app-container">
-              <Navbar variant="default" />
-
-              <div className="main-content">
-                <h1>PC Build Advisor</h1>
-                <BuildForm
-                  purpose={purpose}
-                  budget={budget}
-                  priorities={priorities} // Add priorities prop
-                  preferredBrands={preferredBrands}
-                  loading={loading}
-                  onPurposeChange={setPurpose}
-                  onBudgetChange={setBudget}
-                  onPrioritiesChange={setPriorities} // Add priorities handler
-                  onPreferredBrandsChange={setPreferredBrands}
-                  onSubmit={handleSubmit}
-                />
-                {error && (
-                  <div className="alert alert-danger mt-3">{error}</div>
-                )}
-                <div className="result-container">
-                  {buildResult && <BuildResult {...buildResult} />}
-                </div>
-              </div>
-            </div>
-          }
+    <div className="app-container">
+      <Navbar />
+      <div className="main-content">
+        <h1>PC Build Advisor</h1>
+        <BuildForm
+          purpose={purpose}
+          budget={budget}
+          loading={loading}
+          onPurposeChange={setPurpose}
+          onBudgetChange={setBudget}
+          onSubmit={handleSubmit}
         />
-        <Route
-          path="/description"
-          element={
-            <div className="app-container">
-              <Navbar variant="default" />
-              <div className="main-content">
-                <ComponentDescription />
-              </div>
-            </div>
-          }
-        />
-        <Route
-          path="/available-components"
-          element={
-            <div className="app-container">
-              <Navbar variant="default" />
-              <div className="main-content">
-                <AvailableComponents />
-              </div>
-            </div>
-          }
-        />
-      </Routes>
-    </Router>
+        {error && (
+          <div className="error-message">{error}</div>
+        )}
+        {buildResult && (
+          <div className="result-container">
+            <BuildResult {...buildResult} />
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 

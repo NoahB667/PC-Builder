@@ -12,6 +12,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/components")
+@CrossOrigin(origins = "*")
 public class ComponentController {
 
     @Autowired
