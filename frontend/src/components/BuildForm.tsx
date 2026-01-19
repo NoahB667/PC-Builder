@@ -68,7 +68,7 @@ export const BuildForm: React.FC<BuildFormProps> = ({
         />
         <RangeSlider
           min={500}
-          max={10000}
+          max={5000}
           step={5}
           value={budget}
           onChange={e => onBudgetChange(Number(e.target.value))}
