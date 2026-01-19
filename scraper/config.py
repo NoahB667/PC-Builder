@@ -1,0 +1,15 @@
+
+CPU_SEARCHES = {
+}
+
+GPU_SEARCHES = {
+}
+
+RAM_SEARCHES = {
+}
+
+TARGET_COMPONENTS = {
+    **CPU_SEARCHES,
+    **GPU_SEARCHES,
+    **RAM_SEARCHES,
+}
