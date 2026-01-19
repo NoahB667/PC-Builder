@@ -10,20 +10,26 @@ export const apiUrl =
 // TypeScript interface for a single component
 interface Component {
   id: number;
-  type: string;
   brand: string;
   name: string;
-  socket: string;
-  powerWatt: number;
   price: number;
   performanceScore: number;
 }
 
 // Interface for the backend build suggestion response
 interface BuildSuggestion {
-  components: Component[];
-  compatibilityPass: boolean;
-  totalPrice: number;
+  components: {
+    cpu: Component | null;
+    motherboard: Component | null;
+    ram: Component | null;
+    gpu: Component | null;
+    storage: Component | null;
+    psu: Component | null;
+    case: Component | null;
+  };
+  totalCost: number;
+  score: number;
+  error?: string;
 }
 
 // Interface for the formatted build result used in the frontend
@@ -59,23 +65,6 @@ function App() {
   );
   const [error, setError] = useState<string | null>(null);
 
-  // Helper to format component type for display
-  const formatComponentType = (type: string): string => {
-    switch (type.toLowerCase()) {
-      case "cpu":
-        return "CPU";
-      case "gpu":
-        return "GPU";
-      case "ram":
-        return "RAM";
-      case "power supply":
-      case "psu":
-        return "PSU";
-      default:
-        return type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
-    }
-  };
-
   // Format the backend build suggestion into a frontend-friendly structure
   const formatBuildResult = (
     suggestion: BuildSuggestion
@@ -84,13 +73,26 @@ function App() {
       [key: string]: { name: string; price: number };
     } = {};
 
-    // Format all components by type
-    suggestion.components.forEach((component) => {
-      const formattedType = formatComponentType(component.type);
-      formattedComponents[formattedType] = {
-        name: `${component.brand} ${component.name}`,
-        price: component.price,
-      };
+    // Map backend component keys to display names
+    const componentMapping: { [key: string]: string } = {
+      cpu: "CPU",
+      gpu: "GPU",
+      motherboard: "Motherboard",
+      ram: "RAM",
+      storage: "Storage",
+      psu: "PSU",
+      case: "Case",
+    };
+
+    // Format all components from the object
+    Object.entries(suggestion.components).forEach(([key, component]) => {
+      if (component) {
+        const displayName = componentMapping[key] || key;
+        formattedComponents[displayName] = {
+          name: `${component.brand} ${component.name}`,
+          price: component.price,
+        };
+      }
     });
 
     // Order components according to COMPONENT_ORDER
@@ -103,19 +105,11 @@ function App() {
       }
     });
 
-    // Calculate average performance score
-    const averageScore = Math.round(
-      suggestion.components.reduce(
-        (acc, curr) => acc + curr.performanceScore,
-        0
-      ) / suggestion.components.length
-    );
-
     return {
       components: orderedComponents,
-      totalPrice: suggestion.totalPrice,
-      score: averageScore,
-      isCompatible: suggestion.compatibilityPass,
+      totalPrice: suggestion.totalCost,
+      score: suggestion.score,
+      isCompatible: true, // Backend doesn't return compatibility flag, assume true if build is returned
     };
   };
 
@@ -144,12 +138,18 @@ function App() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
-        throw new Error(errorData?.message || "Failed to get build suggestion");
+        throw new Error(errorData?.error || errorData?.message || "Failed to get build suggestion");
       }
 
       const result: BuildSuggestion = await response.json();
 
-      if (!result.components || result.components.length === 0) {
+      // Check if backend returned an error
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      // Check if we got valid components
+      if (!result.components || Object.keys(result.components).length === 0) {
         throw new Error("No compatible components found for your requirements");
       }
 
