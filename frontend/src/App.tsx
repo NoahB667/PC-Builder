@@ -42,7 +42,6 @@ interface FormattedBuildResult {
   };
   totalPrice: number;
   score: number;
-  isCompatible: boolean;
 }
 
 // Fixed order for displaying components in the result
@@ -109,7 +108,6 @@ function App() {
       components: orderedComponents,
       totalPrice: suggestion.totalCost,
       score: suggestion.score,
-      isCompatible: true, // Backend doesn't return compatibility flag, assume true if build is returned
     };
   };
 
@@ -146,11 +144,6 @@ function App() {
       // Check if backend returned an error
       if (result.error) {
         throw new Error(result.error);
-      }
-
-      // Check if we got valid components
-      if (!result.components || Object.keys(result.components).length === 0) {
-        throw new Error("No compatible components found for your requirements");
       }
 
       setBuildResult(formatBuildResult(result));

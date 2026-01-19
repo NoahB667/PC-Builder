@@ -335,14 +335,6 @@ button:disabled {
   font-weight: 600;
 }
 
-.compatibility-pass span {
-  color: var(--success-color);
-}
-
-.compatibility-fail span {
-  color: var(--error-text);
-}
-
 .components-list {
   display: flex;
   flex-direction: column;
