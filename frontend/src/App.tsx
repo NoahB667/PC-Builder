@@ -1,16 +1,11 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useState } from "react";
 import "./App.css";
 import { BuildForm } from "./components/BuildForm";
 import { BuildResult } from "./components/BuildResult";
-import ComponentDescription from "./components/ComponentDescription";
-import AvailableComponents from "./components/AvailableComponents";
-import LandingPage from "./components/LandingPage";
 import Navbar from "./components/Navbar";
 
 export const apiUrl =
-  import.meta.env.REACT_APP_API_URL ||
-  `${window.location.protocol}//${window.location.hostname}:8080`;
+  import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 // TypeScript interface for a single component
 interface Component {
@@ -58,8 +53,6 @@ const COMPONENT_ORDER = [
 function App() {
   const [purpose, setPurpose] = useState<string>("Gaming");
   const [budget, setBudget] = useState<number>(1000);
-  const [priorities, setPriorities] = useState<string>(""); // Add priorities state
-  const [preferredBrands, setPreferredBrands] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [buildResult, setBuildResult] = useState<FormattedBuildResult | null>(
     null
@@ -136,8 +129,6 @@ function App() {
       const params = new URLSearchParams({
         purpose: purpose,
         budget: budget.toString(),
-        priorities: priorities, // Add priorities to request
-        preferredBrands: preferredBrands.join(","),
       });
 
       // Fetch build suggestion from backend
@@ -171,63 +162,28 @@ function App() {
   };
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route
-          path="/builder"
-          element={
-            <div className="app-container">
-              <Navbar variant="default" />
-
-              <div className="main-content">
-                <h1>PC Build Advisor</h1>
-                <BuildForm
-                  purpose={purpose}
-                  budget={budget}
-                  priorities={priorities} // Add priorities prop
-                  preferredBrands={preferredBrands}
-                  loading={loading}
-                  onPurposeChange={setPurpose}
-                  onBudgetChange={setBudget}
-                  onPrioritiesChange={setPriorities} // Add priorities handler
-                  onPreferredBrandsChange={setPreferredBrands}
-                  onSubmit={handleSubmit}
-                />
-                {error && (
-                  <div className="alert alert-danger mt-3">{error}</div>
-                )}
-                <div className="result-container">
-                  {buildResult && <BuildResult {...buildResult} />}
-                </div>
-              </div>
-            </div>
-          }
+    <div className="app-container">
+      <Navbar />
+      <div className="main-content">
+        <h1>PC Build Advisor</h1>
+        <BuildForm
+          purpose={purpose}
+          budget={budget}
+          loading={loading}
+          onPurposeChange={setPurpose}
+          onBudgetChange={setBudget}
+          onSubmit={handleSubmit}
         />
-        <Route
-          path="/description"
-          element={
-            <div className="app-container">
-              <Navbar variant="default" />
-              <div className="main-content">
-                <ComponentDescription />
-              </div>
-            </div>
-          }
-        />
-        <Route
-          path="/available-components"
-          element={
-            <div className="app-container">
-              <Navbar variant="default" />
-              <div className="main-content">
-                <AvailableComponents />
-              </div>
-            </div>
-          }
-        />
-      </Routes>
-    </Router>
+        {error && (
+          <div className="error-message">{error}</div>
+        )}
+        {buildResult && (
+          <div className="result-container">
+            <BuildResult {...buildResult} />
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
