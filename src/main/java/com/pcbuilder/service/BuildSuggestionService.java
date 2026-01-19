@@ -120,9 +120,12 @@ public class BuildSuggestionService {
 
     private List<BuildCandidate> expandWithRams(List<BuildCandidate> candidates, List<Ram> components, Double budget, String purpose) {
         return expandCandidates(candidates, components, budget, purpose, (cand, comp) -> {
-            cand.ram = comp;
-            cand.totalCost += comp.getPrice();
-            return cand;
+            if (cand.motherboard != null && comp.getGeneration().equalsIgnoreCase(cand.motherboard.getRamGen())) {
+                cand.ram = comp;
+                cand.totalCost += comp.getPrice();
+                return cand;
+            }
+            return null;
         });
     }
 
