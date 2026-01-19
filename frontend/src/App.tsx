@@ -7,13 +7,11 @@ import Navbar from "./components/Navbar";
 export const apiUrl =
   import.meta.env.VITE_API_URL || "http://localhost:8080";
 
-// Base interface for common component properties
 interface BaseComponent {
   id: number;
   price: number;
 }
 
-// CPU specific interface
 interface CpuComponent extends BaseComponent {
   brand: string;
   name: string;
@@ -26,7 +24,6 @@ interface CpuComponent extends BaseComponent {
   graphics?: string;
 }
 
-// GPU specific interface - matches Gpu.java
 interface GpuComponent extends BaseComponent {
   manufacturer: string;
   modelName: string;
@@ -41,7 +38,6 @@ interface GpuComponent extends BaseComponent {
   pcieGen: number;
 }
 
-// Motherboard specific interface - matches Motherboard.java
 interface MotherboardComponent extends BaseComponent {
   brand: string;
   modelName: string;
@@ -58,10 +54,9 @@ interface MotherboardComponent extends BaseComponent {
   supportsBackConnect?: boolean;
 }
 
-// RAM specific interface - matches Ram.java
 interface RamComponent extends BaseComponent {
   brand: string;
-  name: string; // Note: backend uses 'name' not 'modelName'
+  name: string;
   generation: string;
   speedMhz: number;
   casLatency: number;
@@ -72,7 +67,6 @@ interface RamComponent extends BaseComponent {
   heightMm: string;
 }
 
-// Storage specific interface - matches Storage.java
 interface StorageComponent extends BaseComponent {
   brand: string;
   modelName: string;
@@ -87,7 +81,6 @@ interface StorageComponent extends BaseComponent {
   includesHeatSink: boolean;
 }
 
-// PSU specific interface - matches Psu.java
 interface PsuComponent extends BaseComponent {
   brand: string;
   modelName: string;
@@ -100,7 +93,6 @@ interface PsuComponent extends BaseComponent {
   pcie51Ready?: boolean;
 }
 
-// Case specific interface - matches Case.java
 interface CaseComponent extends BaseComponent {
   brand: string;
   modelName: string;
@@ -116,10 +108,8 @@ interface CaseComponent extends BaseComponent {
   usbCFrontPanel?: boolean;
 }
 
-// Union type for all component types
 type Component = CpuComponent | GpuComponent | MotherboardComponent | RamComponent | StorageComponent | PsuComponent | CaseComponent;
 
-// Interface for the backend build suggestion response
 interface BuildSuggestion {
   components: {
     cpu: CpuComponent | null;
@@ -135,7 +125,6 @@ interface BuildSuggestion {
   error?: string;
 }
 
-// Interface for the formatted build result used in the frontend
 interface FormattedBuildResult {
   components: {
     [key: string]: {
@@ -148,7 +137,6 @@ interface FormattedBuildResult {
   score: number;
 }
 
-// Fixed order for displaying components in the result
 const COMPONENT_ORDER = [
   "CPU",
   "GPU",
@@ -168,7 +156,6 @@ function App() {
   );
   const [error, setError] = useState<string | null>(null);
 
-  // Format the backend build suggestion into a frontend-friendly structure
   const formatBuildResult = (
     suggestion: BuildSuggestion
   ): FormattedBuildResult => {
@@ -176,7 +163,6 @@ function App() {
       [key: string]: { name: string; price: number; details: Component };
     } = {};
 
-    // Map backend component keys to display names
     const componentMapping: { [key: string]: string } = {
       cpu: "CPU",
       gpu: "GPU",
@@ -187,7 +173,6 @@ function App() {
       case: "Case",
     };
 
-    // Helper function to get the display name for a component
     const getComponentDisplayName = (key: string, component: Component): string => {
       switch (key) {
         case "cpu": {
@@ -223,7 +208,6 @@ function App() {
       }
     };
 
-    // Format all components from the object
     Object.entries(suggestion.components).forEach(([key, component]) => {
       if (component) {
         const displayName = componentMapping[key] || key;
@@ -235,7 +219,6 @@ function App() {
       }
     });
 
-    // Order components according to COMPONENT_ORDER
     const orderedComponents: {
       [key: string]: { name: string; price: number; details: Component };
     } = {};
@@ -252,7 +235,6 @@ function App() {
     };
   };
 
-  // Handle form submission to get build suggestion from backend
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -263,8 +245,6 @@ function App() {
         purpose: purpose,
         budget: budget.toString(),
       });
-
-      // Fetch build suggestion from backend
       const response = await fetch(
         `${apiUrl}/api/components/build/suggest?${params}`,
         {
@@ -282,7 +262,6 @@ function App() {
 
       const result: BuildSuggestion = await response.json();
 
-      // Check if backend returned an error
       if (result.error) {
         throw new Error(result.error);
       }

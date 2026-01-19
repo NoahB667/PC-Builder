@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 
-// Base interface for common component properties
 interface BaseComponent {
   id: number;
   price: number;
