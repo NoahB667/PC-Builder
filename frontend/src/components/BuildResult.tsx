@@ -33,7 +33,7 @@ export const BuildResult: React.FC<BuildResultProps> = ({
             Total Price: <span>${totalPrice.toFixed(2)}</span>
           </p>
           <p>
-            Build Score: <span>{score}/100</span>
+            Build Score: <span>{score}</span>
           </p>
         </div>
         <div className="components-list">{renderedComponents}</div>
